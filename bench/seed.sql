@@ -1,8 +1,11 @@
--- Seed 1M users for the rank benchmark. Run after Flyway has created the schema.
-INSERT INTO users (id, total_xp)
-SELECT g, (random() * 100000)::bigint FROM generate_series(1, 1000000) g;
-ANALYZE users;
+-- Seeds 1,000,000 users (ids 1000..1000999) for the rank benchmark.
+-- Ids start at 1000 so they never clash with hand-made test users 1 and 2.
+-- XP is random up to 1e9 so ties are rare and ranks are well-defined.
+-- Safe to re-run: it clears the previous seed first.
+DELETE FROM users WHERE id BETWEEN 1000 AND 1000999;
 
--- The Postgres side of the benchmark: rank = users ahead of you + 1.
--- EXPLAIN (ANALYZE, BUFFERS)
--- SELECT COUNT(*) + 1 FROM users WHERE total_xp > (SELECT total_xp FROM users WHERE id = 500000);
+INSERT INTO users (id, total_xp)
+SELECT g, (random() * 1000000000)::bigint
+FROM generate_series(1000, 1000999) g;
+
+ANALYZE users;
