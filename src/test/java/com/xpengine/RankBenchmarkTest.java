@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * Skips itself unless at least 100k users are seeded (see bench/seed.sql), so a normal
  * test run is unaffected. Requires docker compose up -d. Stop the app first (port/CPU noise).
  */
-@SpringBootTest
+@SpringBootTest(properties = {"xp.rebuild.interval=PT24H", "xp.rebuild.initial-delay=PT24H"})
 class RankBenchmarkTest {
 
     static {

@@ -16,7 +16,7 @@ public class RebuildService {
         this.jdbc = jdbc; this.leaderboard = leaderboard;
     }
 
-    @Scheduled(fixedDelayString = "PT15M", initialDelayString = "PT1M")
+    @Scheduled(fixedDelayString = "${xp.rebuild.interval:PT15M}", initialDelayString = "${xp.rebuild.initial-delay:PT1M}")
     public int rebuild() {
         List<long[]> rows = jdbc.query("SELECT id, total_xp FROM users",
                 (rs, i) -> new long[]{rs.getLong(1), rs.getLong(2)});
