@@ -29,7 +29,12 @@ public class XpService {
         // 1. Fast-path claim: ONE atomic SET NX, scoped per user. No check-then-set race.
         Boolean claimed = tryClaim(idemKey);
         if (Boolean.FALSE.equals(claimed)) {
-            return duplicate(req.userId());
+            // Redis says "seen", but a crash may have left the key without a saved event.
+            if (eventExists(req)) {
+                return duplicate(req.userId());
+            }
+            // No row: the earlier attempt died after claiming. Fall through and process it.
+            // UNIQUE(user_id, event_id) in persist() still stops a concurrent double-award.
         }
 
         // 2. Postgres commit FIRST. UNIQUE(user_id, event_id) is the real backstop.
@@ -93,6 +98,17 @@ public class XpService {
         } catch (Exception e) {
             return Boolean.TRUE;   // Postgres unique constraint still guarantees correctness
         }
+    }
+
+    private boolean eventExists(EventRequest req) {
+        Integer n = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM xp_events WHERE user_id = ? AND event_id = ?",
+                Integer.class,
+                req.userId(),
+                req.eventId()
+        );
+
+        return n != null && n > 0;
     }
 
     private void release(String key) {

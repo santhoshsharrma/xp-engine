@@ -93,7 +93,39 @@ class XpServiceConcurrencyTest {
         assertEquals(EventType.QUIZ_PASSED.xp, totalXp());
         assertEquals(1, eventRows());
     }
+    @Test
+    void redisClaimExistsButPostgresEventMissing_recoversAndAwards() {
+        EventRequest req =
+                new EventRequest(USER, "evt-crash", EventType.LESSON_COMPLETED);
 
+        // Simulate a crash after Redis SET NX succeeded,
+        // but before PostgreSQL inserted the event.
+        redis.opsForValue().set(
+                "idem:" + USER + ":evt-crash",
+                "1"
+        );
+
+        assertEquals(0, eventRows());
+        assertEquals(0L, totalXp());
+
+        // Retry after the simulated crash.
+        // Redis says "already claimed", but PostgreSQL has no event row,
+        // so XpService should continue and process the event.
+        EventResponse recovered = xp.award(req);
+
+        assertEquals(false, recovered.duplicate());
+        assertEquals(EventType.LESSON_COMPLETED.xp, recovered.xpAwarded());
+        assertEquals(EventType.LESSON_COMPLETED.xp, totalXp());
+        assertEquals(1, eventRows());
+
+        // A subsequent retry must now be treated as a duplicate.
+        EventResponse duplicate = xp.award(req);
+
+        assertEquals(true, duplicate.duplicate());
+        assertEquals(0, duplicate.xpAwarded());
+        assertEquals(EventType.LESSON_COMPLETED.xp, totalXp());
+        assertEquals(1, eventRows());
+    }
     // ---- helpers ----
 
     private List<EventResponse> runParallel(int n, IntFunction<EventRequest> requestFor) throws Exception {
