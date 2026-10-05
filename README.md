@@ -34,8 +34,3 @@ curl -X POST localhost:8080/events -H 'Content-Type: application/json' \
   -d '{"userId":1,"eventId":"evt-1","type":"LESSON_COMPLETED"}'
 ```
 (Insert a user first: `INSERT INTO users (id) VALUES (1);`)
-
-## Benchmark (to be filled with measured results only)
-
-See `bench/seed.sql`. Compare p50/p99 of the Postgres rank query vs `ZREVRANK` on 1M users.
-Hardware: _TBD_. Results: _TBD_.
