@@ -475,5 +475,3 @@ Fewer than 100,000 users are in the database. Run the seed script first.
 
 **Santhosh Sharma**
 [GitHub](https://github.com/santhoshsharrma) · [LinkedIn](https://linkedin.com/in/santhoshsharma)
-
-Built as a hands-on study of idempotency, concurrency control and cache design: written, broken, tested and measured end to end.
