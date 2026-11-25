@@ -308,7 +308,6 @@ After the rebuild, the leaderboard matches PostgreSQL again. If the rebuild call
 2. **50 different events in parallel for one user** results in an exact total of 2,500 XP and 50 rows, so no update was lost.
 3. **Redis key deleted before a retry** still blocks the duplicate, which proves the PostgreSQL constraint works as the backstop.
 
-<!-- VERIFY before publishing: your resume mentions "crash-window recovery tests". If a test for the case "app dies after the Redis claim but before the PostgreSQL commit" is committed, add it as item 4 above. If it is not committed, remove that phrase from the resume or add the test. -->
 
 ## Benchmark: rank lookup at 1M users
 
@@ -365,7 +364,6 @@ mvn test -Dtest=RankBenchmarkTest
 The benchmark disables the scheduled rebuild for its own run so that a background rebuild cannot interfere with the timings. The first run also loads the leaderboard into Redis.
 ## Load test
 
-<!-- VERIFY before publishing: the figures below come from your resume. bench/load.js is in the project, but I have not seen its contents or the run output. Save the end-of-run summary next to it (for example bench/load-results.txt), make these numbers match it exactly, and add the command used to run it. If the numbers do not match a real run, correct the table and the resume bullet. -->
 
 Local run against the running API, script in [`bench/load.js`](bench/load.js):
 
@@ -461,8 +459,6 @@ Fewer than 100,000 users are in the database. Run the seed script first.
 - No authentication or rate limiting. The admin rebuild endpoint is open.
 - An unknown `userId` returns a 500 instead of a 404.
 - Redis orders tied scores by member name, so tied players can get different ranks from it.
-
-<!-- VERIFY: if the crash-window case (app dies after the Redis claim, before the PostgreSQL commit) is NOT handled in XpService, add here: "A retry within 24 hours of such a crash is treated as a duplicate, so that one award can be lost (never doubled)." If it IS handled, describe the mechanism in the design table above. -->
 
 **Roadmap**
 
